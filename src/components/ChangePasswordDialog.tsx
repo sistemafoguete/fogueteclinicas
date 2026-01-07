@@ -58,7 +58,7 @@ export const ChangePasswordDialog = ({
       }
 
       // Chamar a edge function para alterar a senha
-      const response = await fetch(`https://vqphtzkdhfzdwbumexhe.supabase.co/functions/v1/change-user-password`, {
+      const response = await fetch(`https://rymyratphdelombeqitp.supabase.co/functions/v1/change-user-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
