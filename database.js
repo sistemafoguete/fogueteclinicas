@@ -8,7 +8,7 @@ export const db = {
     notifications: [], // NEW: Centralized notifications
     roles: [], // NEW: For custom roles
     users: [
-        { id: 1, username: 'director', password: 'admin123', name: 'Diretoria Geral', role: 'director' },
+        { id: 1, username: 'director@gmail.com', password: 'admin123', name: 'Diretoria Geral', role: 'director' },
         { id: 3, username: 'financeiro', password: 'admin123', name: 'Financeiro', role: 'financeiro' },
         { id: 2, username: 'staff', password: 'staff123', name: 'Funcionário', role: 'staff' },
         { id: 18, username: 'raquel', password: 'admin123', name: 'Coordenadora Raquel (Floresta)', role: 'coordinator_floresta' },
