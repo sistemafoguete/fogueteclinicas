@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Mensal - Fundação Dom Bosco</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .period {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .summary-card.positive {
+            border-left-color: #27ae60;
+        }
+        
+        .summary-card.negative {
+            border-left-color: #e74c3c;
+        }
+        
+        .summary-card.warning {
+            border-left-color: #f39c12;
+        }
+        
+        .card-title {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .card-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .card-change {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .positive .card-change {
+            color: #27ae60;
+        }
+        
+        .negative .card-change {
+            color: #e74c3c;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        tr:hover {
+            background-color: #f1f2f6;
+        }
+        
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.1em;
+            margin: 20px 0;
+        }
+        
+        .actions {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .actions, .btn {
+                display: none !important;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .card-value {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 RELATÓRIO MENSAL</h1>
+            <div class="period">Fundação Dom Bosco - Janeiro 2024</div>
+        </div>
+        
+        <div class="content">
+            <!-- Resumo Executivo -->
+            <div class="section">
+                <h2 class="section-title">📈 Resumo Executivo</h2>
+                
+                <div class="summary-grid">
+                    <div class="summary-card positive">
+                        <div class="card-title">Total de Clientes</div>
+                        <div class="card-value">127</div>
+                        <div class="card-change">↗ +12% vs mês anterior</div>
+                    </div>
+                    
+                    <div class="summary-card positive">
+                        <div class="card-title">Consultas Realizadas</div>
+                        <div class="card-value">284</div>
+                        <div class="card-change">↗ +8% vs mês anterior</div>
+                    </div>
+                    
+                    <div class="summary-card positive">
+                        <div class="card-title">Receita Total</div>
+                        <div class="card-value">R$ 45.280</div>
+                        <div class="card-change">↗ +15% vs mês anterior</div>
+                    </div>
+                    
+                    <div class="summary-card warning">
+                        <div class="card-title">Taxa de Ocupação</div>
+                        <div class="card-value">78%</div>
+                        <div class="card-change">↘ -3% vs mês anterior</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Análise Financeira -->
+            <div class="section">
+                <h2 class="section-title">💰 Análise Financeira</h2>
+                
+                <div class="chart-placeholder">
+                    📊 Gráfico de Receitas vs Despesas
+                    <br><small>Aqui seria exibido um gráfico interativo</small>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Receita</th>
+                                <th>Despesa</th>
+                                <th>Saldo</th>
+                                <th>% do Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Consultas Psicológicas</td>
+                                <td>R$ 18.500</td>
+                                <td>R$ 3.200</td>
+                                <td>R$ 15.300</td>
+                                <td>41%</td>
+                            </tr>
+                            <tr>
+                                <td>Terapia Ocupacional</td>
+                                <td>R$ 12.800</td>
+                                <td>R$ 2.100</td>
+                                <td>R$ 10.700</td>
+                                <td>28%</td>
+                            </tr>
+                            <tr>
+                                <td>Fonoaudiologia</td>
+                                <td>R$ 9.200</td>
+                                <td>R$ 1.800</td>
+                                <td>R$ 7.400</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Fisioterapia</td>
+                                <td>R$ 4.780</td>
+                                <td>R$ 950</td>
+                                <td>R$ 3.830</td>
+                                <td>11%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Desempenho por Profissional -->
+            <div class="section">
+                <h2 class="section-title">👨‍⚕️ Desempenho por Profissional</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Profissional</th>
+                                <th>Especialidade</th>
+                                <th>Consultas</th>
+                                <th>Receita</th>
+                                <th>Avaliação</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Dra. Maria Silva</td>
+                                <td>Psicóloga</td>
+                                <td>95</td>
+                                <td>R$ 14.250</td>
+                                <td>4.8/5.0</td>
+                                <td><span class="status active">Ativo</span></td>
+                            </tr>
+                            <tr>
+                                <td>Dr. João Santos</td>
+                                <td>Fonoaudiólogo</td>
+                                <td>72</td>
+                                <td>R$ 10.800</td>
+                                <td>4.9/5.0</td>
+                                <td><span class="status active">Ativo</span></td>
+                            </tr>
+                            <tr>
+                                <td>Dra. Ana Costa</td>
+                                <td>Terapeuta Ocupacional</td>
+                                <td>68</td>
+                                <td>R$ 10.200</td>
+                                <td>4.7/5.0</td>
+                                <td><span class="status active">Ativo</span></td>
+                            </tr>
+                            <tr>
+                                <td>Dr. Pedro Lima</td>
+                                <td>Fisioterapeuta</td>
+                                <td>49</td>
+                                <td>R$ 7.350</td>
+                                <td>4.6/5.0</td>
+                                <td><span class="status active">Ativo</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Satisfação do Cliente -->
+            <div class="section">
+                <h2 class="section-title">😊 Satisfação do Cliente</h2>
+                
+                <div class="summary-grid">
+                    <div class="summary-card positive">
+                        <div class="card-title">Avaliação Média</div>
+                        <div class="card-value">4.7/5.0</div>
+                        <div class="card-change">↗ +0.2 vs mês anterior</div>
+                    </div>
+                    
+                    <div class="summary-card positive">
+                        <div class="card-title">NPS Score</div>
+                        <div class="card-value">72</div>
+                        <div class="card-change">↗ +5 pontos vs mês anterior</div>
+                    </div>
+                    
+                    <div class="summary-card positive">
+                        <div class="card-title">Taxa de Retorno</div>
+                        <div class="card-value">89%</div>
+                        <div class="card-change">↗ +3% vs mês anterior</div>
+                    </div>
+                </div>
+                
+                <div class="chart-placeholder">
+                    📊 Gráfico de Satisfação por Serviço
+                    <br><small>Distribuição de avaliações por categoria</small>
+                </div>
+            </div>
+            
+            <!-- Metas e Objetivos -->
+            <div class="section">
+                <h2 class="section-title">🎯 Metas e Objetivos</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Meta</th>
+                                <th>Objetivo</th>
+                                <th>Atual</th>
+                                <th>Progresso</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Novos Clientes</td>
+                                <td>15</td>
+                                <td>12</td>
+                                <td>80%</td>
+                                <td><span class="status pending">Em andamento</span></td>
+                            </tr>
+                            <tr>
+                                <td>Receita Mensal</td>
+                                <td>R$ 50.000</td>
+                                <td>R$ 45.280</td>
+                                <td>91%</td>
+                                <td><span class="status pending">Em andamento</span></td>
+                            </tr>
+                            <tr>
+                                <td>Satisfação</td>
+                                <td>4.8</td>
+                                <td>4.7</td>
+                                <td>98%</td>
+                                <td><span class="status completed">Concluído</span></td>
+                            </tr>
+                            <tr>
+                                <td>Taxa de Ocupação</td>
+                                <td>85%</td>
+                                <td>78%</td>
+                                <td>92%</td>
+                                <td><span class="status pending">Em andamento</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <a href="/" class="btn btn-secondary">← Voltar ao Sistema</a>
+                <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir Relatório</button>
+                <button onclick="exportToPDF()" class="btn btn-primary">📄 Exportar PDF</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Relatório gerado automaticamente em <span id="currentDate"></span>
+            <br>Fundação Dom Bosco © 2024
+        </div>
+    </div>
+
+    <script>
+        // Mostrar data atual
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Função para exportar para PDF (simulada)
+        function exportToPDF() {
+            alert('📄 Exportando relatório para PDF...\n\nEm um sistema real, isso geraria um arquivo PDF para download.');
+        }
+
+        // Adicionar interatividade aos cards
+        document.querySelectorAll('.summary-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const title = this.querySelector('.card-title').textContent;
+                alert(`📊 Detalhes sobre: ${title}\n\nEm um sistema real, isso abriria uma visualização detalhada.`);
+            });
+        });
+
+        // Simular atualização de dados em tempo real
+        function updateStats() {
+            const cards = document.querySelectorAll('.card-value');
+            cards.forEach(card => {
+                if (card.textContent.includes('R$')) {
+                    // Simular pequena variação no valor
+                    const currentValue = parseFloat(card.textContent.replace(/[R$.,\s]/g, ''));
+                    const variation = (Math.random() - 0.5) * 100;
+                    const newValue = Math.max(0, currentValue + variation);
+                    card.textContent = 'R$ ' + newValue.toLocaleString('pt-BR');
+                }
+            });
+        }
+
+        // Atualizar stats a cada 30 segundos (apenas para demonstração)
+        // setInterval(updateStats, 30000);
+    </script>
+</body>
+</html>

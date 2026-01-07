@@ -1,0 +1,157 @@
+-- Ajustar função para lidar com trigger automático
+CREATE OR REPLACE FUNCTION public.create_employee_direct(
+  p_email text, 
+  p_password text, 
+  p_name text, 
+  p_employee_role employee_role DEFAULT 'staff'::employee_role, 
+  p_phone text DEFAULT NULL::text, 
+  p_department text DEFAULT NULL::text
+) 
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  new_user_id UUID;
+  new_profile_id UUID;
+  result JSON;
+  hashed_password TEXT;
+BEGIN
+  -- Verificar se email já existe
+  IF EXISTS (SELECT 1 FROM auth.users WHERE email = p_email) THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Email já existe',
+      'message', 'Este email já está sendo usado por outro usuário'
+    );
+  END IF;
+  
+  -- Generate new UUID for user
+  new_user_id := gen_random_uuid();
+  
+  -- Usar uma senha hash simples para desenvolvimento
+  hashed_password := '$2a$10$' || substr(md5(p_password || new_user_id::text || 'salt'), 1, 53);
+  
+  -- Insert directly into auth.users
+  INSERT INTO auth.users (
+    id,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    phone,
+    created_at,
+    updated_at,
+    raw_app_meta_data,
+    raw_user_meta_data
+  ) VALUES (
+    new_user_id,
+    p_email,
+    hashed_password,
+    NOW(),
+    p_phone,
+    NOW(),
+    NOW(),
+    '{"provider": "email", "providers": ["email"]}'::jsonb,
+    jsonb_build_object(
+      'name', p_name,
+      'employee_role', p_employee_role::text,
+      'phone', p_phone,
+      'department', p_department
+    )
+  );
+
+  -- Aguardar um pouco para que trigger execute se existir
+  PERFORM pg_sleep(0.1);
+  
+  -- Verificar se profile já foi criado por trigger, senão criar
+  SELECT id INTO new_profile_id FROM public.profiles WHERE user_id = new_user_id;
+  
+  IF new_profile_id IS NULL THEN
+    -- Create profile se não existe
+    INSERT INTO public.profiles (
+      id,
+      user_id,
+      name,
+      email,
+      employee_role,
+      phone,
+      department,
+      is_active
+    ) VALUES (
+      gen_random_uuid(),
+      new_user_id,
+      p_name,
+      p_email,
+      p_employee_role,
+      p_phone,
+      p_department,
+      true
+    ) RETURNING id INTO new_profile_id;
+  ELSE
+    -- Atualizar profile existente com dados corretos
+    UPDATE public.profiles SET
+      name = p_name,
+      email = p_email,
+      employee_role = p_employee_role,
+      phone = p_phone,
+      department = p_department,
+      is_active = true
+    WHERE user_id = new_user_id;
+  END IF;
+
+  -- Create employee record se não existe
+  IF NOT EXISTS (SELECT 1 FROM public.employees WHERE user_id = new_user_id) THEN
+    INSERT INTO public.employees (
+      user_id,
+      profile_id,
+      employee_code
+    ) VALUES (
+      new_user_id,
+      new_profile_id,
+      'EMP' || LPAD(EXTRACT(YEAR FROM NOW())::TEXT, 4, '0') || 
+      LPAD(EXTRACT(MONTH FROM NOW())::TEXT, 2, '0') || 
+      LPAD(RIGHT(new_user_id::TEXT, 8), 8, '0')
+    );
+  END IF;
+
+  -- Create identity record se não existe
+  IF NOT EXISTS (SELECT 1 FROM auth.identities WHERE user_id = new_user_id AND provider = 'email') THEN
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      identity_data,
+      provider,
+      created_at,
+      updated_at
+    ) VALUES (
+      gen_random_uuid(),
+      new_user_id,
+      jsonb_build_object(
+        'sub', new_user_id::text,
+        'email', p_email
+      ),
+      'email',
+      NOW(),
+      NOW()
+    );
+  END IF;
+
+  result := json_build_object(
+    'success', true,
+    'user_id', new_user_id,
+    'profile_id', new_profile_id,
+    'message', 'Funcionário criado com sucesso'
+  );
+
+  RETURN result;
+  
+EXCEPTION WHEN OTHERS THEN
+  -- Return error as JSON
+  RETURN json_build_object(
+    'success', false,
+    'error', SQLERRM,
+    'message', 'Erro ao criar funcionário: ' || SQLERRM
+  );
+END;
+$$;

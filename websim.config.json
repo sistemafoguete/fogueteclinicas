@@ -1,0 +1,18 @@
+{
+  "name": "FUNDAÇÃO DOM BOSCO",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão da Fundação Dom Bosco",
+  "type": "web-application",
+  "framework": "vanilla-js",
+  "database": "localStorage",
+  "modules": [
+    "auth",
+    "database", 
+    "clients",
+    "schedule",
+    "financial",
+    "stock",
+    "employees",
+    "documents"
+  ]
+}

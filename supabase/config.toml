@@ -1,0 +1,19 @@
+project_id = "vqphtzkdhfzdwbumexhe"
+
+[functions.create-director-elvimar]
+verify_jwt = false
+
+[functions.create-users]
+verify_jwt = true
+
+[functions.delete-users]
+verify_jwt = true
+
+[functions.change-user-password]
+verify_jwt = true
+
+[functions.change-own-password]
+verify_jwt = true
+
+[functions.send-employee-confirmation]
+verify_jwt = false
